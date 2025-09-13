@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('idStyle');
             $table->text('discription');
             $table->double('price');
+            $table->integer('kolvo')->default(1);
             $table->timestamps();
 
             $table->foreign('idBrend')->references('idBrend')->on('brends');

@@ -4,3 +4,25 @@ body{
 .watchPhoto{
     float: left;
 }
+.custom-modal-size {
+    max-width: 55vw;
+}
+.basket-wrapper {
+    display: inline-block;
+    position: relative;
+}
+
+.basket-badge {
+    position: absolute;
+    top: -5px;
+    right: -10px;
+    background-color: #388aff ;
+    color: white;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 15px;
+    font-size: 12px;
+    min-width: 22px;
+    text-align: center;
+}
+

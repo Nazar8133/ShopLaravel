@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'buyers'=>[
+            'driver'=>'session',
+            'provider'=>'buyers'
+        ]
     ],
 
     /*
@@ -65,6 +69,10 @@ return [
             'model' => env('AUTH_MODEL', App\Models\User::class),
         ],
 
+        'buyers' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Buyer::class,
+        ],
         // 'users' => [
         //     'driver' => 'database',
         //     'table' => 'users',
@@ -97,6 +105,12 @@ return [
             'expire' => 60,
             'throttle' => 60,
         ],
+        'buyers' => [
+            'provider' => 'buyers',
+            'table' => 'buyers_password_reset_tokens',
+            'expire' => 5,
+            'throttle' => 5,
+        ]
     ],
 
     /*

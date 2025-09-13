@@ -73,6 +73,11 @@
             <span class="input-group-text">.00</span>
         </div>
 
+        <div class="input-group mb-3">
+            <label class="input-group-text" for="inputGroupFile01">Редагуйте кількість</label>
+            <input type="number" name="kolvo" required class="form-control" placeholder="Кількість" value="{{$watch->kolvo ?? old('kolvo')}}">
+        </div>
+
         <input class="btn btn-outline-primary" type="submit" name="knopka" value="Редагувати">
         <br>
     </form>

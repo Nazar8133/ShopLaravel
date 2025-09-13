@@ -66,7 +66,6 @@ class MechanismController extends Controller
     {
         $mechanism=Mechanism::find($id);
         $mechanism->type=$request->type;
-        $mechanism->updated_at=now();
         $mechanism->update();
         return redirect()->route('mechanism.index')->with('succes', 'Редагування пройшло успішно!');
     }
@@ -79,5 +78,11 @@ class MechanismController extends Controller
         $mechanism=Mechanism::find($id);
         $mechanism->delete();
         return redirect()->route('mechanism.index')->with('succes', 'Видалення пройшло успішно!');
+    }
+
+    public static function showAllMechanism()
+    {
+        $mechanism=Mechanism::select('idMechanism', 'type')->get();
+        return $mechanism;
     }
 }

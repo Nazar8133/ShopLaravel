@@ -58,7 +58,6 @@ class BrendController extends Controller
     {
         $brend=Brend::find($id);
         $brend->brend=$request->brend;
-        $brend->updated_at=now();
         $brend->update();
         return redirect()->route('brend.index')->with('succes', 'Бренд успішно відредаговано!');
     }
@@ -71,5 +70,11 @@ class BrendController extends Controller
         $brend=Brend::find($id);
         $brend->delete();
         return redirect()->route('brend.index')->with('succes', 'Бренд успішно видалено!');
+    }
+
+    public static function showAllBrend()
+    {
+        $brend=Brend::select('idBrend', 'brend')->get();
+        return $brend;
     }
 }

@@ -13,7 +13,7 @@ return [
     |
     */
 
-    'failed' => 'Таког користувача неіснує, або введено неправельні данні!',
+    'failed' => 'Такого користувача неіснує, або введено неправельні данні!',
     'password' => 'The provided password is incorrect.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 

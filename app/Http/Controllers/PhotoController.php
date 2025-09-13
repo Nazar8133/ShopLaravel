@@ -62,9 +62,8 @@ class PhotoController extends Controller
         $photo1->status=0;
         $photo1->update();
         $photo->status=1;
-        $photo->updated_at=now();
         $photo->update();
-        return redirect()->route('watch.index')->with('succes', 'Фотографію успішно відредаговано!');
+        return back()->with('succes', 'Фотографію успішно відредаговано!');
     }
 
     public function showCreatePhoto(string $id)
@@ -137,5 +136,11 @@ class PhotoController extends Controller
             }
         }
         Photo::where('idWatch', $idWatch)->delete();
+    }
+
+    public static function showAllPhotoUser(string $idWatch)
+    {
+        $photo=Photo::select('photo', 'status')->where('idWatch', $idWatch)->get();
+        return $photo;
     }
 }

@@ -22,7 +22,7 @@ class MechanismRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'type'=>'required|min:2|max:25|regex:/^[a-zA-Zа-яА-ЯёЁіІїЇєЄґҐʼ’\- ]+$/u'
+            'type'=>'required|min:2|max:25|regex:/^[a-zA-Zа-яА-ЯІіЇїЄєҐґʼ’\- ]+$/u'
         ];
     }
 

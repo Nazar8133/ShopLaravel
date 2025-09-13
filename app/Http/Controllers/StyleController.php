@@ -66,7 +66,6 @@ class StyleController extends Controller
     {
         $style=Style::find($id);
         $style->style=$request->style;
-        $style->updated_at=now();
         $style->update();
         return redirect()->route('style.index')->with('succes', 'Редагування пройшло успішно!');
     }
@@ -79,5 +78,11 @@ class StyleController extends Controller
         $style=Style::find($id);
         $style->delete();
         return redirect()->route('style.index')->with('succes', 'Видалення пройшло успішно!');
+    }
+
+    public static function showAllStyles()
+    {
+        $style=Style::select('idStyle', 'style')->get();
+        return $style;
     }
 }
