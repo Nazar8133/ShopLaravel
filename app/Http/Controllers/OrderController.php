@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderConfirmed;
+use Illuminate\Support\Facades\Mail;
 use App\Models\Order;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -87,7 +89,28 @@ class OrderController extends Controller
                 if ($request->koment != null) {
                     $order->koment = $request->koment;
                 }
-                if ($request->selected_payment == 'liqPay') {
+                if ($request->selected_payment == 'cash' || $request->selected_payment == 'googlePay') {
+                    if ($request->selected_payment=='cash'){
+                        $order->paymentStatus = 2;
+                    }
+                    else{
+                        $order->paymentStatus = 1;
+                    }
+                    $order->orderStatus = 2;
+                    if ($rezultOrder) {
+                        $order->update();
+                    } else {
+                        $order->save();
+                    }
+                    self::sendOrderConfirmedEmail($order->toArray(), session('basket'), session('promoCode'), session('totalCost'));
+                    WatchController::updateWatchKolvo(session('basket'));
+                    if ($promoCode) {
+                        PromoCodeController::promoCodeUpdate($promoCode);
+                    }
+                    Session::forget(['basket', 'totalCost', 'promoCode', 'numberOrder']);
+                    return redirect()->route('index.user')->with('succes', 'Замовлення успішно створено, наш консультант скоро з вами зв\'яжеться!');
+                }
+                elseif ($request->selected_payment == 'liqPay') {
                     $order->paymentStatus = 2;
                     $order->orderStatus = 2;
                     if ($rezultOrder) {
@@ -98,35 +121,49 @@ class OrderController extends Controller
                     }
                     $url = self::liqPay($order->numberOrder);
                     return redirect()->away($url);
-                } elseif ($request->selected_payment == 'cash') {
-                    $order->paymentStatus = 2;
-                    $order->orderStatus = 2;
-                    if ($rezultOrder) {
-                        $order->update();
-                    } else {
-                        $order->save();
-                    }
-                    WatchController::updateWatchKolvo(session('basket'));
-                    if (session('promoCode')) {
-                        PromoCodeController::promoCodeUpdate(session('promoCode')['idPromoCode']);
-                    }
-                    Session::forget(['basket', 'totalCost', 'promoCode', 'numberOrder']);
-                    return redirect()->route('index.user')->with('succes', 'Замовлення успішно створено, наш консультант скоро з вами зв\'яжеться!');
-                } elseif ($request->selected_payment == 'googlePay') {
-                    $order->paymentStatus = 1;
-                    $order->orderStatus = 2;
-                    $order->save();
-                    WatchController::updateWatchKolvo(session('basket'));
-                    if (session('promoCode')) {
-                        PromoCodeController::promoCodeUpdate(session('promoCode')['idPromoCode']);
-                    }
-                    Session::forget(['basket', 'totalCost', 'promoCode', 'numberOrder']);
-                    return redirect()->route('index.user')->with('succes', 'Замовлення успішно створено, наш консультант скоро з вами зв\'яжеться!');
                 }
             } else {
                 return back()->withErrors(['errorGuest' => 'Помилка оформлення замовлення!']);
             }
         }
+    }
+
+    public static function sendOrderConfirmedEmail($order, $watch, $promoCode, $totalCost)
+    {
+        $buyer=Auth::guard('buyers')->user()->toArray();
+        if($order['delivery']=='nova_post'){
+            $rezult=NovaPostController::getBuyerNovaPostAddress($buyer['idNovaPost']);
+            $delivery=$rezult->city.', '.$rezult->warehouse;
+        }
+        elseif ($order['delivery']=='courier_delivery'){
+            $rezult=AddressController::getDeliveryAddressById($buyer['idAddress']);
+            $delivery=$rezult->region.', '.$rezult->city.', '.$rezult->street.' '.($rezult->houseNumber ?? $rezult->apartmentNumber);
+        }
+        else{
+            $delivery='Самовивіз з нашого магазину';
+        }
+
+        if ($order['payment']=='liqPay'){
+            $privateKey=config('services.liqpay.private_key');
+            $publicKey=config('services.liqpay.public_key');
+            $params = [
+                'public_key'     => $publicKey,
+                'action'         => 'status',
+                'order_id'       => $order['numberOrder'],
+                'version'        => '3',
+            ];
+            $date=base64_encode(json_encode($params));
+            $signature=base64_encode(sha1($privateKey.$date.$privateKey, true));
+            $response=Http::asForm()->post('https://www.liqpay.ua/api/request', ['data'=>$date, 'signature'=>$signature])->json();
+            $payment=strtoupper($response['sender_card_type']).' '.$response['sender_card_mask2'];
+        }
+        elseif ($order['payment']=='googlePay'){
+            $payment='GooglePay';
+        }
+        else{
+            $payment='Оплата при отриманні';
+        }
+        Mail::to($buyer['email'])->queue(new OrderConfirmed($order, $watch, $promoCode ?? [], $buyer, $delivery, $payment, $totalCost));
     }
 
 
@@ -157,6 +194,7 @@ class OrderController extends Controller
     {
         $order=Order::where('numberOrder', session('numberOrder'))->first();
         if ($order->paymentStatus==1){
+            self::sendOrderConfirmedEmail($order->toArray(), session('basket'), session('promoCode'), session('totalCost'));
             WatchController::updateWatchKolvo(session('basket'));
             if (session('promoCode')) {
                 PromoCodeController::promoCodeUpdate(session('promoCode')['idPromoCode']);

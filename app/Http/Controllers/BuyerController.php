@@ -178,6 +178,7 @@ class BuyerController extends Controller
         $buyer=Buyer::where('googleId', $googleBuyer->id)->first();
         if ($buyer){
             Auth::guard('buyers')->login($buyer);
+            $buyer->update(['email_verified_at'=>Carbon::now('Europe/Kyiv')->format('Y-m-d H:i:s')]);
             return redirect()->to($url)->with('succes', 'Вхід успішний!');
         }
         else{
