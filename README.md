@@ -83,6 +83,7 @@ It provides clean syntax, built-in authentication system, routing, database mana
   - Email: `nazarsnitka813@gmail.com`  
   - Password: `12345678Asd!` 
 
+---
 
 ## Українська версія  
 
