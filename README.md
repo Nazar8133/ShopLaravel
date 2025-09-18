@@ -7,60 +7,183 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
-## About Laravel
+# ShopLaravel 
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## English Version  
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+**ShopLaravel** – an online store built with the **Laravel** framework.  
+This project was created to practice and utilize as many Laravel features as possible while implementing a fully functional e-commerce platform.  
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### About Laravel  
 
-## Learning Laravel
+**Laravel** is a modern PHP framework for building scalable and maintainable web applications.  
+It provides clean syntax, built-in authentication system, routing, database management via Eloquent ORM, queues, mail system, API integrations, and much more – all of which speed up development and keep the codebase clean.  
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+## Features  
+- Homepage  
+- Product catalog with filtering  
+- Product search  
+- Shopping cart  
+- Checkout page  
+- Delivery selection (Nova Poshta integration)  
+- Online payment (LiqPay integration)  
+- Registration and login (including Google OAuth)  
+- Admin panel with extended functionality  
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+### Admin Panel Features  
+- Product management (create, edit, delete)  
+- Order management with detailed view  
+- Promo code generation and management  
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+## 🛠️ Technologies  
+- **Laravel 12.0.1**  
+- PHP 8.2  
+- MySQL / MariaDB  
+- Bootstrap 5.3  
+- JavaScript, CSS
+- Mailtrap
+- External APIs: LiqPay, Nova Poshta, Google OAuth 2.0  
 
-## Laravel Sponsors
+## ⚙️ Installation and Setup  
+1. Clone the repository to your server.  
+2. Import the `shopLaravel.sql` database dump into your **MySQL** database.  
+   ⚠️ After import, it is recommended to delete the `shopLaravel.sql` file.  
+3. Configure the `.env` file with your database credentials:  
+   - `DB_HOST` – database server address  
+   - `DB_PORT` – port  
+   - `DB_DATABASE` – database name  
+   - `DB_USERNAME` – username  
+   - `DB_PASSWORD` – password  
+4. Create a symbolic link for images:  
+   ```bash
+   php artisan storage:link
+   ```
+5. Add all required **API keys** to the `.env` file:   
+   - **For sending emails:**                                                                                                                                                                                        
+     `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+   - **For Google authentication:**                       
+    `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
 
-### Premium Partners
+   - **For LiqPay:**                    
+    `LIQPAY_PUBLIC_KEY`, `LIQPAY_PRIVATE_KEY`
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+   - **For Nova Poshta:**                   
+    `NP_API_KEY`
+6. *(Optional)* To enable Laravel Debugbar or IDE Helper, set in `.env`:                             
+   ```env
+    APP_DEBUG=true
+   ```
+7. Start your server.
 
-## Contributing
+## 👤 User Roles  
+- **Customer**: browse catalog, manage cart, place orders
+- **Administrator**: full access to admin panel, product management, order management, promo code management, and employee registration                       
+- **Admin panel login credentials**:
+  - Email: `nazarsnitka813@gmail.com`  
+  - Password: `12345678Asd!` 
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
 
-## Code of Conduct
+## Українська версія  
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+**ShopLaravel** – це інтернет-магазин, розроблений на фреймворку **Laravel**.  
+Цей проєкт створено з метою практики та використання максимальної кількості можливостей Laravel, водночас реалізовуючи повноцінний функціонал інтернет-магазину.  
 
-## Security Vulnerabilities
+### Про Laravel  
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Laravel** – це сучасний PHP-фреймворк для створення масштабованих та підтримуваних веб-додатків.  
+Він надає зручний синтаксис, вбудовану систему авторизації, маршрутизацію, роботу з базами даних через ORM Eloquent, черги, поштову систему, інтеграцію з API та багато іншого – усе це пришвидшує розробку і робить код чистим.  
 
-## License
+## Функціонал  
+- Головна сторінка  
+- Каталог товарів з фільтрацією  
+- Пошук товарів  
+- Корзина  
+- Оформлення замовлення  
+- Вибір доставки (інтеграція з Новою Поштою)  
+- Онлайн-оплата (інтеграція LiqPay)  
+- Реєстрація та авторизація (включаючи Google) 
+- Адмін-панель з розширеним функціоналом  
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Можливості адмін-панелі  
+- Управління товарами (створення, редагування, видалення)  
+- Управління замовленнями з детальним переглядом  
+- Генерація та редагування промокодів   
+
+## 🛠️ Технології  
+- **Laravel 12.0.1**  
+- PHP 8.2  
+- MySQL / MariaDB  
+- Bootstrap 5.3  
+- JavaScript, CSS
+- Mailtrap
+- Зовнішні API: LiqPay, Нова Пошта, Google OAuth 2.0
+
+## ⚙️ Встановлення та налаштування  
+1. Клонуйте репозиторій на ваш сервер.  
+2. Імпортуйте дамп бази даних `shopLaravel.sql` у вашу базу даних **MySQL**.                    
+   ⚠️ Після імпорту рекомендується видалити файл `shopLaravel.sql`.  
+3. Налаштуйте файл `.env` вказавши параметри бази даних:  
+   - `DB_HOST` – адреса сервера бази даних  
+   - `DB_PORT` – порт  
+   - `DB_DATABASE` – назва бази  
+   - `DB_USERNAME` – логін  
+   - `DB_PASSWORD` – пароль  
+4. Створіть симлінк для зображень:                                 
+   ```bash
+   php artisan storage:link
+   ```
+5. Додати у файл `.env` всі необхідні **API-ключі**:   
+   - **Для відправки листів**:                                                                                                                                                                                      
+     `MAIL_MAILER`, `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`
+
+   - **Для Google-автентифікації**:                       
+    `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`
+
+   - **Для LiqPay**:                    
+    `LIQPAY_PUBLIC_KEY`, `LIQPAY_PRIVATE_KEY`
+
+   - **Для Нової Пошти**:                  
+    `NP_API_KEY`
+6. (Необов’язково) Щоб увімкнути Laravel Debugbar або IDE Helper, змініть у `.env`:                              
+   ```env
+    APP_DEBUG=true
+   ```
+7. Запустіть ваш сервер.
+
+## 👤 Ролі користувачів  
+- **Користувач**: перегляд каталогу, корзина, оформлення замовлення 
+- **Адміністратор**: повний доступ до адмін-панелі, управління товарами, замовленнями, промокодами та реєстрація працівників                       
+- **Дані для входу в адмін-панель**:
+  - Email: `nazarsnitka813@gmail.com`  
+  - Пароль: `12345678Asd!`
+ 
+## 📸 Скріншоти/Sreenshot
+<p align="center">
+  <img src="public/img/screenshots/productCatalog.png" alt="Каталог товарів" width="700"><br>
+	<em>Каталог товарів/Product Catalog</em>
+</p>
+<p align="center">
+  <img src="public/img/screenshots/productDetails.png" alt="Детальніше" width="700"><br>
+	<em>Детальніше/Product Details</em>
+</p>
+<p align="center">
+	<img src="public/img/screenshots/shoppingCart.png" alt="Корзина" width="700"><br>
+	<em>Корзина/Shopping cart</em>
+</p>
+<p align="center">
+	<img src="public/img/screenshots/orderCheckout.png" alt="Корзина" width="700"><br>
+	<em>Оформлення замовлення/Order Checkout</em>
+</p>
+<p align="center">
+	<img src="public/img/screenshots/orderCheckout2.png" alt="Корзина" width="700"><br>
+	<em>Оформлення замовлення після аутентифікації/Authenticated Checkout</em>
+</p>
+<p align="center">
+	<img src="public/img/screenshots/adminPanel.png" alt="Адмін-панель" width="700"><br>
+	<em>Адмін-панель/Admin panel</em>
+</p>
+<p align="center">
+	<img src="public/img/screenshots/productManagement.png" alt="Управління товарами" width="700"><br>
+	<em>Управління товарами/Product Management</em>
+</p> 
