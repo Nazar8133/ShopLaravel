@@ -50,6 +50,7 @@
 
         <div class="text-center">
             <input class="btn btn-outline-primary" type="submit" name="generate" value="Додати">
+            <input class="btn btn-outline-primary" type="submit" name="sendPromo" value="Відправити топ 10 користувачам">
         </div>
         <br>
     </form>

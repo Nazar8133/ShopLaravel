@@ -201,8 +201,6 @@ class BuyerController extends Controller
 
     public static function registrationGoogle($googleBuyer)
     {
-        //dd($googleBuyer);
-        //dd(session('previsionUrl'));
         $password=Str::random(12);
         $buyer=Buyer::create([
             'googleId'=>$googleBuyer->id,
@@ -220,5 +218,15 @@ class BuyerController extends Controller
     {
         $buyer=Buyer::find($idBuyer)->toArray();
         return $buyer;
+    }
+
+    public static function getBuyerEmail(array $array)
+    {
+        $arrEmails=[];
+        foreach ($array as $idBuyer=>$kolvoWatch){
+            $email=Buyer::select('email')->where('idBuyer', $idBuyer)->first();
+            $arrEmails[]=$email;
+        }
+        return $arrEmails;
     }
 }

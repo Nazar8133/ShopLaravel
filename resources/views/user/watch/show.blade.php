@@ -1,25 +1,5 @@
 @extends('layouts.layoutUser', ['title'=>'Детальніше про товар'])
 @section('content')
-    <style>
-        .carousel-item {
-            text-align: center;
-        }
-
-        .carousel-item img {
-            max-width: 100%;
-            max-height: 500px;
-            width: auto;
-            height: auto;
-            display: inline-block;
-            object-fit: contain;
-        }
-        .carousel-control-prev-icon,
-        .carousel-control-next-icon {
-            background-color: black; /* або будь-який інший */
-            border-radius: 50%;      /* за бажанням */
-        }
-    </style>
-
     @push('scripts')
     <script>
         const myCarouselElement = document.querySelector('#carouselExample')
@@ -43,7 +23,7 @@
         <div class="d-flex justify-content-start ps-3 mt-3">
             <a href="{{ route('index.user') }}" class="btn btn-outline-primary">⬅Назад</a>
         </div>
-        <div class="container" style="max-width: 600px;">
+        <div class="container product-gallery-container">
         <div id="carouselExample" class="carousel slide">
             <div class="carousel-inner">
                 @foreach($photo as $tmpPhoto)

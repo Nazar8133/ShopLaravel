@@ -1,6 +1,37 @@
+html,
+body {
+    min-height: 100%;
+}
+
 body{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
     background-color: cornflowerblue;
 }
+
+body > main {
+    flex: 1 0 auto;
+}
+
+body > footer {
+    margin-top: auto;
+    flex-shrink: 0;
+}
+
+.nav-icon {
+    width: 35px;
+    height: auto;
+}
+
+.nav-icon-clickable {
+    cursor: pointer;
+}
+
+.footer-copyright {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .watchPhoto{
     float: left;
 }
@@ -26,3 +57,345 @@ body{
     text-align: center;
 }
 
+.modal-scroll-area {
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.basket-modal-photo {
+    max-width: 150px;
+    max-height: 150px;
+}
+
+.basket-quantity-group {
+    max-width: 110px;
+}
+
+/* Catalog page */
+.filter-section {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 15px;
+    background-color: #fff;
+}
+
+.form-check {
+    margin-bottom: 0.25rem;
+}
+
+.main-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    flex-wrap: nowrap;
+}
+
+.left-column {
+    width: 25%;
+    min-width: 250px;
+}
+
+.right-column {
+    flex: 1;
+}
+
+.sort-filter-wrapper {
+    background-color: #fff;
+    padding: 10px 15px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.price-input {
+    max-width: 100px;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.clear-filters-btn {
+    font-size: 1rem;
+}
+
+.catalog-card-img {
+    height: 250px;
+    object-fit: contain;
+    width: 100%;
+}
+
+.basket-icon-sm {
+    width: 27px;
+    height: auto;
+}
+
+@media (max-width: 768px) {
+    .main-wrapper {
+        flex-direction: column;
+    }
+
+    .left-column,
+    .right-column {
+        width: 100%;
+    }
+
+    .sort-filter-wrapper {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .search-form {
+        width: 100%;
+    }
+}
+
+/* Product details page */
+.carousel-item {
+    text-align: center;
+}
+
+.carousel-item img {
+    max-width: 100%;
+    max-height: 500px;
+    width: auto;
+    height: auto;
+    display: inline-block;
+    object-fit: contain;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+    background-color: black;
+    border-radius: 50%;
+}
+
+.product-gallery-container {
+    max-width: 600px;
+}
+
+/* Checkout page */
+.delivery-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    max-width: 100%;
+}
+
+.delivery-option {
+    display: block;
+    background-color: #f1f3f5;
+    border: 1px solid #ced4da;
+    border-radius: 8px;
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    position: relative;
+}
+
+.delivery-box {
+    background-color: #f1f3f5;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 0;
+    opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+.delivery-box.expanded {
+    max-height: 1000px;
+    opacity: 1;
+    pointer-events: all;
+}
+
+.search-box {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.4s ease, opacity 0.4s ease;
+    margin-top: 8px;
+}
+
+.search-box.expanded {
+    max-height: 500px;
+    opacity: 1;
+}
+
+input:focus,
+button:focus {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+.delivery-header {
+    padding: 0;
+    background: none;
+    border: none;
+    font-weight: bold;
+    font-size: 1rem;
+    margin-top: 12px;
+    margin-bottom: 10px;
+}
+
+.delivery-content {
+    padding: 10px;
+    width: 100%;
+}
+
+.scroll-box {
+    max-height: 180px;
+    overflow-y: auto;
+    background-color: #fff;
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.select-option {
+    display: block;
+    padding: 6px 12px;
+    margin-bottom: 5px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+}
+
+.select-option:hover {
+    background-color: #ced4da;
+}
+
+.form-section {
+    margin-bottom: 0.6rem;
+}
+
+input[type="radio"] {
+    accent-color: #0d6efd;
+    width: 18px;
+    height: 18px;
+}
+
+.fake-input {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 8px 10px;
+    width: 100%;
+    cursor: pointer;
+    color: #6c757d;
+}
+
+input.select-option[type="submit"] {
+    all: unset;
+    display: block;
+    width: 98%;
+    padding: 6px 12px;
+    margin-bottom: 5px;
+    background-color: #e9ecef;
+    border-radius: 5px;
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s;
+    text-align: left;
+    font-family: inherit;
+    font-size: 1rem;
+    color: #212529;
+}
+
+input.select-option[type="submit"]:hover {
+    background-color: #ced4da;
+}
+
+.selected-info {
+    margin-left: 1.6rem;
+    font-size: 14px;
+    color: #222;
+}
+
+.subtitle {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 0.1rem;
+}
+
+.address {
+    font-weight: 500;
+}
+
+.edit-btn {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    background: transparent;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: #444;
+}
+
+#address-form {
+    max-height: 0;
+    overflow: hidden;
+    opacity: 0;
+    transition: max-height 0.5s ease, opacity 0.5s ease;
+}
+
+#address-form.address-form--visible {
+    max-height: 1000px;
+    opacity: 1;
+}
+
+.checkout-auth-field,
+.checkout-auth-field-label {
+    width: 450px;
+}
+
+.checkout-auth-field-label {
+    text-align: left;
+}
+
+.checkout-google-btn {
+    width: 250px;
+}
+
+.checkout-register-btn {
+    width: 300px;
+}
+
+.checkout-product-thumb {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+}
+
+.checkout-product-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.checkout-comment {
+    resize: vertical;
+    max-height: 200px;
+}
+
+.delivery-section-title {
+    font-weight: bold;
+    background: #f1f3f5;
+    padding: 8px 14px;
+    border-radius: 8px;
+    display: inline-block;
+}
+
+.delivery-section-title--spaced {
+    margin: 21px 0 0 0;
+}
+
+.delivery-form-title {
+    margin: 10px 0;
+}
+
+.checkout-summary-sticky {
+    top: 20px;
+}

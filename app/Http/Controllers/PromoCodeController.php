@@ -7,6 +7,7 @@ use App\Models\PromoCode;
 use Illuminate\Support\Facades\Session;
 use App\Http\Requests\PromoCodeRequest;
 use App\Http\Controllers\WatchController;
+use App\Http\Controllers\OrderController;
 
 class PromoCodeController extends Controller
 {
@@ -59,16 +60,25 @@ class PromoCodeController extends Controller
      */
     public function store(PromoCodeRequest $request)
     {
-        if(preg_match('/^\d{4}-\d{4}-\d{4}-\d{4}$/u', session('promoCode'))==1) {
+        if(preg_match('/^\d{4}-\d{4}-\d{4}-\d{4}$/u', session('code'))==1) {
+            if ($request->has('sendPromo')){
+                if ($request->codeAmount<10){
+                    return back()->withErrors('Для відправки промокодів кількість активацій повинна бути 10 або більше!');
+                }
+                else{
+                    OrderController::topIdBuyers(session('code'), $request->discountValue, $request->dateStart, $request->dateEnd);
+                    $text='та надіслано користувачам!';
+                }
+            }
             $promoCode = new PromoCode();
-            $promoCode->code = session('promoCode');
+            $promoCode->code = session('code');
             $promoCode->discountValue = $request->discountValue;
             $promoCode->codeAmount=$request->codeAmount;
             $promoCode->dateStart = $request->dateStart;
             $promoCode->dateEnd = $request->dateEnd;
             $promoCode->save();
-            Session::forget('promoCode');
-            return back()->with('succes', 'Промокод успішно додано!');
+            Session::forget('code');
+            return back()->with('succes', 'Промокод успішно додано '.($text ?? '').'!');
         }
         else{
             return back()->withErrors('Неправильний формат промокода!');
@@ -138,4 +148,6 @@ class PromoCodeController extends Controller
         $promoCode=PromoCode::select('code', 'discountValue')->first()->toArray();
         return $promoCode;
     }
+
+
 }

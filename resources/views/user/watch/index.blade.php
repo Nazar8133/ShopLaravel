@@ -1,74 +1,6 @@
 @extends('layouts.layoutUser', ['title'=>'Головна сторінка'])
 
 @section('content')
-    <style>
-        .filter-section {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 15px;
-            background-color: #fff;
-        }
-
-        .form-check {
-            margin-bottom: 0.25rem;
-        }
-
-        .main-wrapper {
-            display: flex;
-            gap: 20px;
-            align-items: flex-start;
-            flex-wrap: nowrap;
-        }
-
-        .left-column {
-            width: 25%;
-            min-width: 250px;
-        }
-
-        .right-column {
-            flex: 1;
-        }
-
-        @media (max-width: 768px) {
-            .main-wrapper {
-                flex-direction: column;
-            }
-
-            .left-column,
-            .right-column {
-                width: 100%;
-            }
-        }
-
-        .sort-filter-wrapper {
-            background-color: #fff;
-            padding: 10px 15px;
-            border-radius: 8px;
-            width: 100%;
-        }
-
-
-        @media (max-width: 768px) {
-            .sort-filter-wrapper {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: 1rem;
-            }
-
-            .search-form {
-                width: 100%;
-            }
-        }
-
-        /* Стилі інпутів */
-        .price-input {
-            max-width: 100px;
-            border-radius: 10px;
-            text-align: center;
-        }
-
-    </style>
-
     @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
@@ -118,7 +50,7 @@
                 </div>
                 @if(session('mechanismFilter') || session('brendFilter') || session('styleFilter') || session('genderFilter') || session('priceMin') || session('priceMax'))
                     <div class="mb-3">
-                        <a href="{{route('clear.allFilters')}}" class="btn btn-outline-primary p-1" style="font-size: 1rem;">
+                        <a href="{{route('clear.allFilters')}}" class="btn btn-outline-primary p-1 clear-filters-btn">
                             Скинути фільтри
                         </a>
                     </div>
@@ -220,7 +152,7 @@
                 @foreach($watchIndex as $tmp)
                     <div class="col">
                         <div class="card">
-                            <img src="{{$tmp->photo}}" style="height: 250px; object-fit: contain; width: 100%;" alt="...">
+                            <img src="{{$tmp->photo}}" class="catalog-card-img" alt="...">
                             <div class="card-body">
                                 <h5 class="card-title">{{$tmp->name}}</h5>
                                 <p class="card-text">Ціна: {{$tmp->price}} грн.<br>Механізм: {{$tmp->type}}</p>
@@ -232,20 +164,20 @@
                                     @for($i=0; $i<count(session('basket')); $i++)
                                         @if(session('basket')[$i]['idWatch']==$tmp->idWatch)
                                             <button type="button" class="basket-wrapper position-relative ms-3 border-0 bg-transparent p-0" data-bs-toggle="modal" data-bs-target="#myModal">
-                                                <img src="{{ asset('img/basket.png') }}" style="width: 27px; height: auto;">
+                                                <img src="{{ asset('img/basket.png') }}" class="basket-icon-sm" alt="basket">
                                                     <span class="basket-badge">✓</span>
                                             </button>
                                             @break
                                         @elseif(count(session('basket'))==$i+1)
                                             <a href="{{route('basket.mode', ['mode'=>'add', 'id'=>$tmp->idWatch])}}" class="basket-wrapper position-relative ms-2">
-                                                <img src="{{ asset('img/basket.png') }}" alt="basket" style="width: 27px; height: auto;">
+                                                <img src="{{ asset('img/basket.png') }}" alt="basket" class="basket-icon-sm">
                                             </a>
                                             @break
                                         @endif
                                     @endfor
                                 @else
                                     <a href="{{route('basket.mode', ['mode'=>'add', 'id'=>$tmp->idWatch])}}" class="basket-wrapper position-relative ms-2">
-                                        <img src="{{ asset('img/basket.png') }}" alt="basket" style="width: 27px; height: auto;">
+                                        <img src="{{ asset('img/basket.png') }}" alt="basket" class="basket-icon-sm">
                                     </a>
                                 @endif
                                 @endif

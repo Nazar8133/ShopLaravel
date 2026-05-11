@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Mail\OrderConfirmed;
+use App\Models\Buyer;
+use App\Notifications\BuyerSendPromoCode;
 use Illuminate\Support\Facades\Mail;
 use App\Models\Order;
 use Carbon\Carbon;
@@ -16,6 +18,7 @@ use App\Http\Controllers\PromoCodeController;
 use App\Http\Controllers\WatchController;
 use App\Http\Controllers\BuyerController;
 use App\Http\Requests\OrderRequest;
+use Illuminate\Support\Facades\Notification;
 
 
 class OrderController extends Controller
@@ -68,14 +71,13 @@ class OrderController extends Controller
                 if (session('promoCode')) {
                     $promoCode = session('promoCode')['idPromoCode'];
                 }
-                if (session('numberOrder') && $request->selected_payment == 'cardPrivat') {
+                if (session('numberOrder') && $request->selected_payment == 'liqPay') {
                     $rezult = Order::select('watches', 'idPromoCode', 'delivery', 'payment')->where('numberOrder', session('numberOrder'))->first();
                     if ($rezult->watches != $jsonWatches || $rezult->idPromoCode != $promoCode || $rezult->delivery != $request->selected_delivery || $rezult->payment != $request->selected_payment) {
                         $order = Order::where('numberOrder', session('numberOrder'))->first();
                         $rezultOrder = true;
                     } else {
-                        $url = self::liqPay(session('numberOrder'));
-                        return redirect()->away($url);
+                        return self::liqPay(session('numberOrder'));
                     }
                 } else {
                     $order = new Order();
@@ -119,8 +121,7 @@ class OrderController extends Controller
                         Session::put('numberOrder', $order->numberOrder);
                         $order->save();
                     }
-                    $url = self::liqPay($order->numberOrder);
-                    return redirect()->away($url);
+                    return self::liqPay($order->numberOrder);
                 }
             } else {
                 return back()->withErrors(['errorGuest' => 'Помилка оформлення замовлення!']);
@@ -155,7 +156,9 @@ class OrderController extends Controller
             $date=base64_encode(json_encode($params));
             $signature=base64_encode(sha1($privateKey.$date.$privateKey, true));
             $response=Http::asForm()->post('https://www.liqpay.ua/api/request', ['data'=>$date, 'signature'=>$signature])->json();
-            $payment=strtoupper($response['sender_card_type']).' '.$response['sender_card_mask2'];
+            $cardType=strtoupper($response['sender_card_type'] ?? 'LIQPAY');
+            $cardMask=$response['sender_card_mask2'] ?? '';
+            $payment=trim($cardType.' '.$cardMask);
         }
         elseif ($order['payment']=='googlePay'){
             $payment='GooglePay';
@@ -171,10 +174,13 @@ class OrderController extends Controller
     {
         $privateKey=config('services.liqpay.private_key');
         $publicKey=config('services.liqpay.public_key');
+        if (!$privateKey || !$publicKey) {
+            return redirect()->route('checkout.user')->withErrors(['errorGuest' => 'Не налаштовані ключі LiqPay.']);
+        }
         $params = [
             'public_key'     => $publicKey,
             'action'         => 'pay',
-            'amount'         => session('totalCost'),
+            'amount'         => (float) session('totalCost'),
             'currency'       => 'UAH',
             'description'    => 'Оплата замовлення в Магазині годинників',
             'order_id'       => $orderId,
@@ -183,16 +189,24 @@ class OrderController extends Controller
             'server_url'     => route('liqPay.callback'),
             'result_url'     => route('result.order')
         ];
+        if (config('services.liqpay.sandbox') || strpos($publicKey, 'sandbox_') === 0) {
+            $params['sandbox'] = '1';
+        }
         $date=base64_encode(json_encode($params));
         $signature=base64_encode(sha1($privateKey.$date.$privateKey, true));
-        $response=Http::asForm()->post('https://www.liqpay.ua/api/3/checkout', ['data'=>$date, 'signature'=>$signature]);
-        $url = $response->transferStats->getEffectiveUri()->__toString();
-        return $url;
+        return view('user.watch.liqPayForm', compact('date', 'signature'));
     }
 
     public function resultPay()
     {
         $order=Order::where('numberOrder', session('numberOrder'))->first();
+        if (!$order){
+            return redirect()->route('checkout.user')->withErrors(['errorGuest'=>'Замовлення не знайдено!']);
+        }
+        if ($order->payment=='liqPay' && $order->paymentStatus==2){
+            self::syncLiqPayStatus($order);
+            $order->refresh();
+        }
         if ($order->paymentStatus==1){
             self::sendOrderConfirmedEmail($order->toArray(), session('basket'), session('promoCode'), session('totalCost'));
             WatchController::updateWatchKolvo(session('basket'));
@@ -200,13 +214,13 @@ class OrderController extends Controller
                 PromoCodeController::promoCodeUpdate(session('promoCode')['idPromoCode']);
             }
             Session::forget(['basket', 'totalCost', 'promoCode', 'numberOrder']);
-            return redirect()->route('index.user')->with('succes', 'Замовлення оформлено успішно!');
+            return redirect()->route('index.user')->with('succes', 'Замовлення оформлено успішно! Оплата пройшла успішно.');
         }
         elseif ($order->paymentStatus==0){
             return redirect()->route('checkout.user')->withErrors(['errorGuest'=>'Неуспішний платіж, спробуйте оплатити замовлення знову!']);
         }
         elseif ($order->paymentStatus==2){
-            return redirect()->route('checkout.user')->withErrors(['errorGuest'=>'Ви покинули сторінку оплати!']);
+            return redirect()->route('checkout.user')->withErrors(['errorGuest'=>'Платіж ще обробляється. Оновіть сторінку через кілька секунд або спробуйте оплатити ще раз.']);
         }
         else{
             return redirect()->route('checkout.user')->withErrors(['errorGuest'=>'Невідома помилка при оплаті!']);
@@ -222,16 +236,37 @@ class OrderController extends Controller
 
         if ($signature === $signatureLiqPay) {
             $decoded = json_decode(base64_decode($dataLiqPay), true);
-            if ($decoded['status']=='success'){
-                Order::where('numberOrder', $decoded['order_id'])->update(['idPayment'=>$decoded['payment_id'], 'paymentStatus' => 1]);
+            if (in_array($decoded['status'] ?? null, ['success', 'sandbox'], true)){
+                Order::where('numberOrder', $decoded['order_id'])->update(['idPayment'=>$decoded['payment_id'] ?? null, 'paymentStatus' => 1]);
             }
-            elseif ($decoded['status']=='error' || $decoded['status']=='failure'){
-                Order::where('numberOrder', $decoded['order_id'])->update(['idPayment'=>$decoded['payment_id'], 'paymentStatus' => 0]);
+            elseif (in_array($decoded['status'] ?? null, ['error', 'failure'], true)){
+                Order::where('numberOrder', $decoded['order_id'])->update(['idPayment'=>$decoded['payment_id'] ?? null, 'paymentStatus' => 0]);
             }
             return response('OK', 200);
         }
         else{
             return response('Invalid signature', 403);
+        }
+    }
+
+    private static function syncLiqPayStatus(Order $order): void
+    {
+        $privateKey=config('services.liqpay.private_key');
+        $publicKey=config('services.liqpay.public_key');
+        $params = [
+            'public_key' => $publicKey,
+            'action' => 'status',
+            'order_id' => $order->numberOrder,
+            'version' => '3',
+        ];
+        $data=base64_encode(json_encode($params));
+        $signature=base64_encode(sha1($privateKey.$data.$privateKey, true));
+        $response=Http::asForm()->post('https://www.liqpay.ua/api/request', ['data'=>$data, 'signature'=>$signature])->json();
+        if (in_array($response['status'] ?? null, ['success', 'sandbox'], true)){
+            $order->update(['idPayment'=>$response['payment_id'] ?? null, 'paymentStatus'=>1]);
+        }
+        elseif (in_array($response['status'] ?? null, ['error', 'failure'], true)){
+            $order->update(['idPayment'=>$response['payment_id'] ?? null, 'paymentStatus'=>0]);
         }
     }
 
@@ -338,5 +373,60 @@ class OrderController extends Controller
         $order->orderStatus=$request->orderStatus;
         $order->update();
         return back()->with('succes', 'Статус успішно оновлено!');
+    }
+
+    public static function topIdBuyers($promoCode, $discountValue, $dateStart, $dateEnd)
+    {
+        $rezultTop=[];
+        $rezultKolvo=0;
+        $id=0;
+        $rezult = Order::select('idBuyer', 'watches')->get();
+        //dd($rezult);
+        $kolvoRezult=count($rezult);
+        for($i=0; $i<$kolvoRezult; $i++){
+            if ($rezultKolvo==0){
+                $id=$rezult[$i]['idBuyer'];
+            }
+            if ($rezult[$i]['idBuyer']==$id){
+                $arrayWatch=json_decode($rezult[$i]['watches'], true);
+                foreach ($arrayWatch as $tmpArrayWatch){
+                    $rezultKolvo+=$tmpArrayWatch['kolvo'];
+                }
+            }
+            if($id!=$rezult[$i]['idBuyer'] || $i==$kolvoRezult-1){
+                $rezultTop[$id]=['kolvoTovat'=>$rezultKolvo];
+                $rezultKolvo=0;
+                if (count($rezultTop)==10){
+                    break;
+                }
+                if ($i!=$kolvoRezult-1){
+                    $i--;
+                }
+            }
+        }
+        arsort($rezultTop);
+        $arrEmails=BuyerController::getBuyerEmail($rezultTop);
+        $time=0;
+        foreach ($arrEmails as $items) {
+            Notification::send($items, new BuyerSendPromoCode($promoCode, $discountValue, $dateStart, $dateEnd));
+            $time+=15;
+            sleep($time);
+        }
+        //dd($arrEmails);
+        /*$arrRez=$rezult->groupBy('idBuyer');
+        foreach ($arrRez as $idBuyer=>$arrWatch) {
+            $kolvo = 0;
+
+            foreach ($arrWatch as $item) {
+                $arrayWatch = json_decode($item->watches, true);
+                foreach ($arrayWatch as $watch) {
+                    $kolvo += $watch['kolvo'];
+                }
+            }
+
+            $rezultTop[$idBuyer] = [
+                'kolVoTovat' => $kolvo,
+            ];
+        }*/
     }
 }

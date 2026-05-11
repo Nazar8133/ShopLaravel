@@ -28,7 +28,7 @@ class NovaPostController extends Controller
                 'Limit'=>'15'
             ]];
         $rezult=Http::retry(3, 500)->timeout(5)->post($apiUrl, $data);
-        //dd($rezult->json());
+
         if (!empty($rezult->json()['data'])){
             foreach ($rezult->json()['data'] as $tmpRezult){
                 if ($tmpRezult['PreventEntryNewStreetsUser']==0){
@@ -65,7 +65,7 @@ class NovaPostController extends Controller
         Session::put('selectCityRef', $request->cityRef);
         Session::forget('selectWarehouses');
         $rezult=Http::retry(3, 500)->timeout(5)->post($apiUrl, $date);
-        //dd($rezult->json());
+
         if (!empty($rezult->json()['data'])){
             foreach ($rezult->json()['data'] as $tmpRezult){
                 $warehouses[]=$tmpRezult['Description'];
@@ -74,7 +74,6 @@ class NovaPostController extends Controller
             return back()->with('openSearchWarehouses', true);
         }
         else{
-            //dd($rezult->json());
             return back()->withErrors(['errorNp'=>'Щось пішло не так, можливо такого відділення не існує!']);
         }
     }

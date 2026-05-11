@@ -3,654 +3,22 @@
     @push('scripts')
         <script async src="https://pay.google.com/gp/p/js/pay.js"></script>
         <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                // --- Зберігаємо scroll тільки якщо була відправка форми
-                window.addEventListener('beforeunload', function () {
-                    if (sessionStorage.getItem('formSubmitted') === 'true') {
-                        sessionStorage.setItem('scrollPosition', window.scrollY);
-                    } else {
-                        sessionStorage.removeItem('scrollPosition');
-                    }
-                });
-
-                // --- Ставимо маркер при відправці форми
-                document.querySelectorAll('form').forEach(form => {
-                    form.addEventListener('submit', () => {
-                        sessionStorage.setItem('formSubmitted', 'true');
-                    });
-                });
-
-                // --- Відновлення scroll тільки якщо була форма
-                window.addEventListener('load', function () {
-                    if (sessionStorage.getItem('formSubmitted') === 'true') {
-                        const scrollY = sessionStorage.getItem('scrollPosition');
-                        if (scrollY !== null) {
-                            window.scrollTo(0, parseInt(scrollY));
-                        }
-                        sessionStorage.removeItem('formSubmitted'); // скидаємо маркер після відновлення
-                    }
-                });
-
-                // --- При кліку по посиланню очищаємо тільки scroll
-                document.querySelectorAll('a').forEach(link => {
-                    link.addEventListener('click', () => {
-                        sessionStorage.removeItem('scrollPosition');
-                    });
-                });
-
-                // --- Зберігати останнє відкрите пошукове вікно
-                document.getElementById('citySelector')?.addEventListener('click', function (e) {
-                    e.preventDefault?.();
-                    sessionStorage.setItem('lastSearchBox', 'city');
-                    sessionStorage.setItem('openDeliveryBox', 'true');
-                });
-                document.getElementById('branchSelector')?.addEventListener('click', function (e) {
-                    e.preventDefault?.();
-                    sessionStorage.setItem('lastSearchBox', 'branch');
-                    sessionStorage.setItem('openDeliveryBox', 'true');
-                });
-                const novaRadio = document.getElementById('novaPoshtaRadio');
-                const pickupRadio = document.getElementById('pickupRadio');
-                const addressRadio = document.getElementById('addressRadio');
-                const deliveryBox = document.getElementById('deliveryBox');
-
-                const citySelector = document.getElementById('citySelector');
-                const citySearchBox = document.getElementById('citySearchBox');
-
-                const branchSelector = document.getElementById('branchSelector');
-                const branchSearchBox = document.getElementById('branchSearchBox');
-
-                const radios = document.querySelectorAll('input[name="delivery_method"]');
-                const editBtn = document.getElementById('editNovaPoshta');
-                const selectedInfo = document.querySelector('.selected-info');
-
-                window.errors = {
+            window.checkoutConfig = {
+                errors: {
                     errorNp: @json($errors->has('errorNp')),
                     searchCity: @json($errors->has('searchCity')),
                     searchWarehouses: @json($errors->has('searchWarehouses')),
-                };
-
-                // === Якщо є помилки — виставляємо selectedDelivery = novaPoshtaRadio
-                if ((window.errors.errorNp || window.errors.searchCity || window.errors.searchWarehouses) &&
-                    !sessionStorage.getItem('selectedDelivery')
-                ) {
-                    sessionStorage.setItem('selectedDelivery', 'novaPoshtaRadio');
-                }
-
-                // === ВІДНОВЛЕННЯ radio з sessionStorage
-                const savedDelivery = sessionStorage.getItem('selectedDelivery');
-                if (savedDelivery) {
-                    const selectedRadio = document.getElementById(savedDelivery);
-                    if (selectedRadio) {
-                        selectedRadio.checked = true;
-
-                        if (savedDelivery === 'novaPoshtaRadio') {
-                            if (!isNovaCompleted()) {
-                                deliveryBox?.classList.add('expanded');
-                            } else {
-                                deliveryBox?.classList.remove('expanded');
-                            }
-                        }
-                    }
-                }
-
-                // --- Відновлення deliveryBox
-                if (
-                    sessionStorage.getItem('openDeliveryBox') === 'true' ||
-                    (window.errors && (window.errors.errorNp || window.errors.searchCity || window.errors.searchWarehouses))
-                ) {
-                    deliveryBox?.classList.add('expanded');
-                }
-
-                // --- Відновлення пошукових вікон
-                if (window.errors) {
-                    if (window.errors.searchCity) {
-                        citySearchBox?.classList.add('expanded');
-                        branchSearchBox?.classList.remove('expanded');
-                        sessionStorage.setItem('openDeliveryBox', 'true');
-                    } else if (window.errors.searchWarehouses) {
-                        branchSearchBox?.classList.add('expanded');
-                        citySearchBox?.classList.remove('expanded');
-                        sessionStorage.setItem('openDeliveryBox', 'true');
-                    } else if (window.errors.errorNp) {
-                        const lastOpen = sessionStorage.getItem('lastSearchBox');
-                        if (lastOpen === 'city') {
-                            citySearchBox?.classList.add('expanded');
-                        } else if (lastOpen === 'branch') {
-                            branchSearchBox?.classList.add('expanded');
-                        }
-                        sessionStorage.setItem('openDeliveryBox', 'true');
-                    }
-                }
-
-                if (citySearchBox?.classList.contains('expanded') || branchSearchBox?.classList.contains('expanded')) {
-                    deliveryBox?.classList.add('expanded');
-                }
-
-                document.querySelectorAll('.city-option, .branch-option').forEach(item => {
-                    item.addEventListener('click', () => {
-                        sessionStorage.setItem('openDeliveryBox', 'true');
-                    });
-                });
-
-                function isNovaCompleted() {
-                    let city = "{{ session('selectCity') ?? '' }}".trim();
-                    let warehouse = "{{ session('selectWarehouses') ?? '' }}".trim();
-                    return city !== '' && warehouse !== '';
-                }
-
-                radios.forEach(radio => {
-                    radio.addEventListener('change', function () {
-                        sessionStorage.setItem('selectedDelivery', this.id);
-
-                        if (this.id === 'novaPoshtaRadio') {
-                            if (!isNovaCompleted()) {
-                                deliveryBox?.classList.add('expanded');
-                            } else {
-                                deliveryBox?.classList.remove('expanded');
-                            }
-                        } else {
-                            deliveryBox?.classList.remove('expanded');
-                        }
-
-                        citySearchBox?.classList.remove('expanded');
-                        branchSearchBox?.classList.remove('expanded');
-                    });
-                });
-
-                if (editBtn && deliveryBox) {
-                    editBtn.addEventListener('click', (e) => {
-                        e.preventDefault();
-                        deliveryBox.classList.toggle('expanded');
-                    });
-                }
-
-                citySelector?.addEventListener('click', (e) => {
-                    e.preventDefault?.();
-                    citySearchBox?.classList.toggle('expanded');
-                    branchSearchBox?.classList.remove('expanded');
-                    sessionStorage.setItem('openDeliveryBox', 'true');
-                });
-
-                branchSelector?.addEventListener('click', (e) => {
-                    e.preventDefault?.();
-                    branchSearchBox?.classList.toggle('expanded');
-                    citySearchBox?.classList.remove('expanded');
-                    sessionStorage.setItem('openDeliveryBox', 'true');
-                });
-
-                setTimeout(() => {
-                    sessionStorage.removeItem('openDeliveryBox');
-                }, 1000);
-
-                ///////////////////
-                const addressRadioBtn = document.getElementById('addressRadio');
-                const addressFormContainer = document.getElementById('address-form');
-                const editAddressButton = document.getElementById('editAddress');
-                const deliveryOptions = document.querySelectorAll('input[name="delivery_method"]');
-                const addressInfoBlock = addressRadioBtn?.closest('.delivery-option')?.querySelector('.selected-info') ?? null;
-
-                // --- Анімаційне show/hide ---
-                function showAddressForm() {
-                    if (addressFormContainer) {
-                        addressFormContainer.classList.add('address-form--visible');
-                    }
-                }
-
-                function hideAddressForm() {
-                    if (addressFormContainer) {
-                        addressFormContainer.classList.remove('address-form--visible');
-                    }
-                }
-
-                if (addressFormContainer && addressRadioBtn) {
-                    function initializeAddressSection() {
-                        const hasAddress = !!addressInfoBlock;
-                        if (hasAddress) {
-                            hideAddressForm();
-                        } else {
-                            if (addressRadioBtn.checked) {
-                                showAddressForm();
-                            } else {
-                                hideAddressForm();
-                            }
-                        }
-                    }
-
-                    initializeAddressSection();
-
-                    deliveryOptions.forEach(option => {
-                        option.addEventListener('change', () => {
-                            const hasAddress = !!addressInfoBlock;
-
-                            if (option === addressRadioBtn && !hasAddress && addressRadioBtn.checked) {
-                                showAddressForm();
-                            } else if (option !== addressRadioBtn && !hasAddress) {
-                                hideAddressForm();
-                            }
-                        });
-                    });
-
-                    if (editAddressButton) {
-                        editAddressButton.addEventListener('click', (e) => {
-                            e.preventDefault();
-                            if (addressFormContainer.classList.contains('address-form--visible')) {
-                                hideAddressForm();
-                            } else {
-                                showAddressForm();
-                            }
-                        });
-                    }
-                }
-
-                // === Логіка адреси доставки (інпут блокування) ===
-                const houseInputAddress = document.getElementById('house');
-                const apartmentInputAddress = document.getElementById('apartment');
-
-                if (houseInputAddress && apartmentInputAddress) {
-                    function initLockState() {
-                        const houseVal = houseInputAddress.value?.toString().trim();
-                        const aptVal = apartmentInputAddress.value?.toString().trim();
-
-                        if (houseVal !== '' && aptVal === '') {
-                            apartmentInputAddress.disabled = true;
-                        } else if (aptVal !== '' && houseVal === '') {
-                            houseInputAddress.disabled = true;
-                        } else {
-                            houseInputAddress.disabled = false;
-                            apartmentInputAddress.disabled = false;
-                        }
-                    }
-
-                    houseInputAddress.addEventListener('input', () => {
-                        const val = houseInputAddress.value?.toString().trim();
-                        if (val !== '') {
-                            apartmentInputAddress.value = '';
-                            apartmentInputAddress.disabled = true;
-                        } else if (apartmentInputAddress.value?.toString().trim() === '') {
-                            apartmentInputAddress.disabled = false;
-                        }
-                    });
-
-                    apartmentInputAddress.addEventListener('input', () => {
-                        const val = apartmentInputAddress.value?.toString().trim();
-                        if (val !== '') {
-                            houseInputAddress.value = '';
-                            houseInputAddress.disabled = true;
-                        } else if (houseInputAddress.value?.toString().trim() === '') {
-                            houseInputAddress.disabled = false;
-                        }
-                    });
-
-                    initLockState();
-                }
-
-                const toggleForm = (showBtnId, hideBtnId, formId, extraHideId = null, extraShowId = null) => {
-                    const showBtn = document.getElementById(showBtnId);
-                    const hideBtn = document.getElementById(hideBtnId);
-                    const form = document.getElementById(formId);
-                    const extraHide = extraHideId ? document.getElementById(extraHideId) : null;
-                    const extraShow = extraShowId ? document.getElementById(extraShowId) : null;
-
-                    if (!showBtn) return;
-
-                    showBtn.addEventListener('click', (e) => {
-                        if (e && e.preventDefault) e.preventDefault();
-                        form?.classList.remove('d-none');
-                        showBtn.classList.add('d-none');
-                        if (hideBtn) hideBtn.classList.remove('d-none');
-                        extraHide?.classList.add('d-none');
-                    });
-
-                    if (hideBtn) {
-                        hideBtn.addEventListener('click', (e) => {
-                            if (e && e.preventDefault) e.preventDefault();
-                            form?.classList.add('d-none');
-                            showBtn.classList.remove('d-none');
-                            hideBtn.classList.add('d-none');
-                            extraHide?.classList.remove('d-none');
-                            extraShow?.classList.remove('d-none');
-                        });
-                    }
-                };
-
-                toggleForm('togglePromoBtn', 'closePromoBtn', 'promoCodeForm');
-                toggleForm('toggleContactBtn', 'collapseContactBtn', 'contactForm', 'userFullName');
-
-                const editUserBtn = document.getElementById('toggle-edit-btn');
-                const editUserForm = document.getElementById('edit-user-form');
-
-                editUserBtn?.addEventListener('click', () => {
-                    if (!editUserForm) return;
-                    const isVisible = !editUserForm.classList.contains('d-none');
-                    if (isVisible) {
-                        editUserForm.classList.add('d-none');
-                        editUserBtn.textContent = 'Змінити';
-                        editUserBtn.classList.remove('btn-outline-danger');
-                        editUserBtn.classList.add('btn-outline-primary');
-                    } else {
-                        editUserForm.classList.remove('d-none');
-                        editUserBtn.textContent = 'Закрити';
-                        editUserBtn.classList.remove('btn-outline-primary');
-                        editUserBtn.classList.add('btn-outline-danger');
-                    }
-                });
-
-                if (editUserForm?.dataset.hasErrors === 'true') {
-                    editUserBtn?.click();
-                }
-
-                (function(){
-                    const hasPromoCode = "{{ session('promoCode') ? 'true' : 'false' }}";
-
-                    if (hasPromoCode === 'true') {
-                        const promoForm = document.getElementById('promoCodeForm');
-                        const toggleBtn = document.getElementById('togglePromoBtn');
-                        const closeBtn = document.getElementById('closePromoBtn');
-
-                        if (promoForm) promoForm.classList.add('d-none');
-                        if (toggleBtn) toggleBtn.classList.add('d-none');
-                        if (closeBtn) closeBtn.classList.add('d-none');
-                    }
-                    if (@json($errors->has('promoCode'))) {
-                        const promoForm = document.getElementById('promoCodeForm');
-                        const toggleBtn = document.getElementById('togglePromoBtn');
-                        const closeBtn = document.getElementById('closePromoBtn');
-
-                        if (promoForm) promoForm.classList.remove('d-none');
-                        if (toggleBtn) toggleBtn.classList.add('d-none');
-                        if (closeBtn) closeBtn.classList.remove('d-none');
-                    }
-                })();
-                // ====== Доставка ======
-                const deliveryRadios = document.querySelectorAll('input[name="delivery_method"]');
-                const hiddenDelivery = document.getElementById('selected_delivery');
-
-                deliveryRadios.forEach(radio => {
-                    radio.addEventListener('change', function () {
-                        hiddenDelivery.value = this.value;
-                    });
-                    if (radio.checked) {
-                        hiddenDelivery.value = radio.value;
-                    }
-                });
-
-                // ====== Оплата ======
-                const paymentRadios = document.querySelectorAll('input[name="payment_method"]');
-                const hiddenPayment = document.getElementById('selected_payment');
-
-                paymentRadios.forEach(radio => {
-                    radio.addEventListener('change', function () {
-                        hiddenPayment.value = this.value;
-                    });
-                    if (radio.checked) {
-                        hiddenPayment.value = radio.value;
-                    }
-                });
-                const komentInput = document.getElementById('koment_input');
-                const hiddenKoment = document.getElementById('koment');
-
-                komentInput.addEventListener('input', function () {
-                    hiddenKoment.value = this.value;
-                });
-
-                // Якщо вже є значення при завантаженні сторінки
-                if (komentInput.value) {
-                    hiddenKoment.value = komentInput.value;
-                }
-                /* ========== GOOGLE PAY CONFIG ========== */
-                const baseRequest = { apiVersion: 2, apiVersionMinor: 0 };
-                const allowedCardNetworks = ["VISA","MASTERCARD"];
-                const allowedCardAuthMethods = ["PAN_ONLY","CRYPTOGRAM_3DS"];
-
-                const tokenizationSpecification = {
-                    type: 'PAYMENT_GATEWAY',
-                    parameters: {
-                        'gateway': 'example',
-                        'gatewayMerchantId': 'exampleMerchantId'
-                    }
-                };
-
-                const baseCardPaymentMethod = {
-                    type: 'CARD',
-                    parameters: {
-                        allowedAuthMethods: allowedCardAuthMethods,
-                        allowedCardNetworks: allowedCardNetworks
-                    }
-                };
-
-                const cardPaymentMethod = Object.assign({}, baseCardPaymentMethod, { tokenizationSpecification });
-                let paymentsClient = null;
-
-                function getGooglePaymentDataRequest() {
-                    const paymentDataRequest = Object.assign({}, baseRequest);
-                    paymentDataRequest.allowedPaymentMethods = [cardPaymentMethod];
-                    paymentDataRequest.transactionInfo = getGoogleTransactionInfo();
-                    paymentDataRequest.merchantInfo = { merchantName: 'Demo Merchant' };
-                    return paymentDataRequest;
-                }
-
-                function getGoogleTransactionInfo() {
-                    return {
-                        countryCode: 'UA',
-                        currencyCode: 'UAH',
-                        totalPriceStatus: 'FINAL',
-                        totalPrice: document.getElementById("totalPrice").innerText
-                    };
-                }
-
-                function getGooglePaymentsClient() {
-                    if (paymentsClient === null) {
-                        paymentsClient = new google.payments.api.PaymentsClient({ environment: 'TEST' });
-                    }
-                    return paymentsClient;
-                }
-
-                /* ========== FORM SUBMIT ========== */
-                const form = document.getElementById("orderForm");
-
-                form.addEventListener("submit", function(event) {
-                    const selectedPayment = document.querySelector("input[name='payment_method']:checked");
-
-                    if (selectedPayment && selectedPayment.value === "googlePay") {
-                        event.preventDefault();
-
-                        const paymentDataRequest = getGooglePaymentDataRequest();
-                        const client = getGooglePaymentsClient();
-
-                        client.loadPaymentData(paymentDataRequest)
-                            .then(function(paymentData) {
-                                console.log("Google Pay Response:", paymentData);
-
-                                // Додаємо токен у форму
-                                let tokenInput = document.createElement("input");
-                                tokenInput.type = "hidden";
-                                tokenInput.name = "googlePayToken";
-                                tokenInput.value = paymentData.paymentMethodData.tokenizationData.token;
-                                form.appendChild(tokenInput);
-
-                                form.submit(); // тепер реально відправляємо форму
-                            })
-                            .catch(function(err) {
-                                console.error("Google Pay Error:", err);
-                            });
-                    }
-                });
-            });
+                    promoCode: @json($errors->has('promoCode')),
+                },
+                hasPromoCode: @json((bool) session('promoCode')),
+                novaPost: {
+                    city: @json(session('selectCity') ?? ''),
+                    warehouse: @json(session('selectWarehouses') ?? ''),
+                },
+            };
         </script>
+        <script src="{{ asset('js/checkout.js') }}"></script>
     @endpush
-    <style>
-        .delivery-group {
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            max-width: 100%;
-        }
-
-        .delivery-option {
-            display: block;
-            background-color: #f1f3f5;
-            border: 1px solid #ced4da;
-            border-radius: 8px;
-            padding: 12px 16px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-            position: relative;
-        }
-
-        .delivery-box {
-            background-color: #f1f3f5;
-            border-top: none;
-            border-radius: 0 0 8px 8px;
-            max-height: 0;
-            opacity: 0;
-            transition: max-height 0.5s ease, opacity 0.5s ease;
-            pointer-events: none;
-            overflow: hidden;
-        }
-
-        .delivery-box.expanded {
-            max-height: 1000px;
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .search-box {
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.4s ease, opacity 0.4s ease;
-            margin-top: 8px;
-        }
-
-        .search-box.expanded {
-            max-height: 500px; /* або більше, якщо список може бути довгий */
-            opacity: 1;
-        }
-
-        input:focus,
-        button:focus {
-            outline: none !important;
-            box-shadow: none !important;
-        }
-
-        .delivery-header {
-            padding: 0;
-            background: none;
-            border: none;
-            font-weight: bold;
-            font-size: 1rem;
-            margin-top: 12px;
-            margin-bottom: 10px;
-        }
-
-        .delivery-content {
-            padding: 10px;
-            width: 100%;
-        }
-
-        .scroll-box {
-            max-height: 180px;
-            overflow-y: auto;
-            background-color: #fff;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #dee2e6;
-        }
-
-        .select-option {
-            display: block;
-            padding: 6px 12px;
-            margin-bottom: 5px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s;
-        }
-
-        .select-option:hover {
-            background-color: #ced4da;
-        }
-
-        .form-section {
-            margin-bottom: 0.6rem;
-        }
-
-        input[type="radio"] {
-            accent-color: #0d6efd;
-            width: 18px;
-            height: 18px;
-        }
-
-        .fake-input {
-            background-color: #fff;
-            border: 1px solid #ced4da;
-            border-radius: 6px;
-            padding: 8px 10px;
-            width: 100%;
-            cursor: pointer;
-            color: #6c757d;
-        }
-        input.select-option[type="submit"] {
-            all: unset; /* скидає всі браузерні стилі кнопки */
-            display: block;
-            width: 98%;
-            padding: 6px 12px;
-            margin-bottom: 5px;
-            background-color: #e9ecef;
-            border-radius: 5px;
-            cursor: pointer;
-            user-select: none;
-            transition: background-color 0.2s;
-            text-align: left;
-            font-family: inherit;
-            font-size: 1rem;
-            color: #212529;
-        }
-
-        input.select-option[type="submit"]:hover {
-            background-color: #ced4da;
-        }
-
-        .selected-info {
-            margin-left: 1.6rem; /* Щоб вирівняти під іконку */
-            font-size: 14px;
-            color: #222;
-        }
-
-        .subtitle {
-            color: #888;
-            font-size: 13px;
-            margin-bottom: 0.1rem;
-        }
-
-        .address {
-            font-weight: 500;
-        }
-
-        .edit-btn {
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            background: transparent;
-            border: none;
-            font-size: 16px;
-            cursor: pointer;
-            color: #444;
-        }
-        #address-form {
-            max-height: 0;
-            overflow: hidden;
-            opacity: 0;
-            transition: max-height 0.5s ease, opacity 0.5s ease;
-        }
-
-        #address-form.address-form--visible {
-            max-height: 1000px; /* достатньо велике значення */
-            opacity: 1;
-        }
-    </style>
     <div class="container my-5">
         <h2 class="mb-4">Оформлення замовлення</h2>
         <div class="row">
@@ -749,8 +117,8 @@
                                     @csrf
                                     <div class="d-flex flex-column align-items-center gap-2">
                                         <div class="mb-3 w-100 d-flex flex-column align-items-center">
-                                            <label for="email" class="form-label" style="width: 450px; text-align: left;">Електронна адреса</label>
-                                            <div style="width: 450px;">
+                                            <label for="email" class="form-label checkout-auth-field-label">Електронна адреса</label>
+                                            <div class="checkout-auth-field">
                                                 <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" id="email" value="{{ old('email') ?? '' }}" required>
                                                 @error('email')
                                                     <div class="invalid-feedback d-block">
@@ -758,8 +126,8 @@
                                                     </div>
                                                 @enderror
                                             </div>
-                                            <label for="password" class="form-label mt-3" style="width: 450px; text-align: left;">Пароль</label>
-                                            <div style="width: 450px;">
+                                            <label for="password" class="form-label mt-3 checkout-auth-field-label">Пароль</label>
+                                            <div class="checkout-auth-field">
                                                 <input type="password" name="password" class="form-control" id="password" required>
                                                 <div class="d-flex justify-content-between align-items-center">
                                                 <div class="form-check text-start mt-2">
@@ -775,13 +143,13 @@
                                             </div>
 
                                         </div>
-                                        <input type="submit" name="knopka" class="btn btn-primary" style="width: 450px;" value="Продовжити">
+                                        <input type="submit" name="knopka" class="btn btn-primary checkout-auth-field" value="Продовжити">
                                     </div>
                                 </form>
                                 <hr>
                                 <div class="text-center">або</div>
                                 <div class="d-flex flex-column align-items-center gap-2 mt-3">
-                                    <a class="btn btn-outline-danger" href="{{route('login.google')}}" style="width: 250px;">Продовжити через Google</a>
+                                    <a class="btn btn-outline-danger checkout-google-btn" href="{{route('login.google')}}">Продовжити через Google</a>
                                 </div>
                             </div>
                         </div>
@@ -847,10 +215,10 @@
                                 </div>
                                 <div class="d-flex flex-column align-items-center gap-2 mt-4">
                                     <!-- Основна кнопка -->
-                                    <input type="submit" class="btn btn-primary" style="width: 300px;" name="knopka" value="Зареєструватися">
+                                    <input type="submit" class="btn btn-primary checkout-register-btn" name="knopka" value="Зареєструватися">
 
                                     <!-- Кнопка Google -->
-                                    <a href="{{route('registration.google')}}" class="btn btn-outline-danger" style="width: 300px;">
+                                    <a href="{{route('registration.google')}}" class="btn btn-outline-danger checkout-register-btn">
                                         <i class="bi bi-google"></i> Реєстрація через Google
                                     </a>
                                 </div>
@@ -865,8 +233,8 @@
                             @foreach(session('basket') as $index => $tmpSession)
                                 <div class="d-flex align-items-center gap-3 py-2">
                                     <!-- Фото -->
-                                    <div style="width: 80px; height: 80px; flex-shrink: 0;">
-                                        <img src="{{ $tmpSession['photo'] }}" alt="Фото товару" class="img-fluid rounded" style="width: 100%; height: 100%; object-fit: contain;">
+                                    <div class="checkout-product-thumb">
+                                        <img src="{{ $tmpSession['photo'] }}" alt="Фото товару" class="img-fluid rounded checkout-product-img">
                                     </div>
 
                                     <!-- Назва та кількість -->
@@ -894,12 +262,11 @@
                                     Коментар до замовлення (необов’язково)
                                 </label>
                                 <div class="card-body">
-                                    <textarea name="koment" id="koment_input" class="form-control mb-3" rows="3" required minlength="5" maxlength="500" style="resize: vertical; max-height: 200px;" placeholder="Наприклад, зателефонуйте перед доставкою або інша важлива інформація...">{{old('koment') ?? ''}}</textarea>
+                                    <textarea name="koment" id="koment_input" class="form-control mb-3 checkout-comment" rows="3" required minlength="5" maxlength="500" placeholder="Наприклад, зателефонуйте перед доставкою або інша важлива інформація...">{{old('koment') ?? ''}}</textarea>
                                 </div>
                             </div>
                             <div class="delivery-group">
-                                <div class="delivery-section-title"
-                                     style="font-weight: bold; background: #f1f3f5; padding: 8px 14px; border-radius: 8px; display: inline-block;">
+                                <div class="delivery-section-title">
                                     🚚 Доставка:
                                 </div>
                                 <div class="delivery-option">
@@ -1064,7 +431,7 @@
                                          @if($errors->has('region') || $errors->has('city') || $errors->has('street') || $errors->has('houseNumber') || $errors->has('apartmentNumber'))
                                              data-has-errors="true"
                                          @endif>
-                                        <div class="delivery-form-title" style="margin: 10px 0;">
+                                        <div class="delivery-form-title">
                                             <strong>Введіть адресу доставки</strong>
                                         </div>
                                         <form action="@if(!$address) {{route('add.deliveryAddress')}} @else {{route('update.deliveryAddress', ['idAddress'=>auth('buyers')->user()->idAddress])}} @endif" method="post">
@@ -1121,8 +488,7 @@
 
                             <!-- Заголовок для способу оплати -->
                             <div class="payment-group delivery-group">
-                                <div class="payment-section-title"
-                                     style="font-weight: bold; background: #f1f3f5; padding: 8px 14px; border-radius: 8px; display: inline-block; margin: 21px 0 0 0;">
+                                <div class="payment-section-title delivery-section-title delivery-section-title--spaced">
                                     💳 Спосіб оплати:
                                 </div>
                                 <div class="payment-option delivery-option">
@@ -1145,7 +511,7 @@
 
             <!-- Права колонка: підсумок замовлення -->
             <div class="col-lg-4">
-                <div class="position-sticky" style="top: 20px;">
+                <div class="position-sticky checkout-summary-sticky">
                     @auth('buyers')
                     @if(session('promoCode'))
                             <div class="card mb-3">
@@ -1219,4 +585,3 @@
         </div>
     </div>
 @endsection
-
