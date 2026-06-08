@@ -11,6 +11,12 @@ class BasketController extends Controller
 {
     public function actionBasket($mode, $idWatch)
     {
+        if (session('basket') && $mode == 'clear') {
+            Session::forget('basket');
+            Session::forget('totalCost');
+            return back()->with('open_modal', true);
+        }
+
         $rezult=WatchController::checkWatchKolvo($idWatch);
         if ($rezult) {
             if (!empty($idWatch) && $mode == 'add') {
@@ -24,10 +30,6 @@ class BasketController extends Controller
                     $basket[] = WatchController::watchBasket($idWatch, 1)[0];
                     Session::put('basket', $basket);
                 }
-            }
-            if (session('basket') && $mode == 'clear') {
-                Session::forget('basket');
-                Session::forget('totalCost');
             }
             if (session('basket') && !empty($idWatch) && $mode == 'del') {
                 $sessionBasket = Session::get('basket');
