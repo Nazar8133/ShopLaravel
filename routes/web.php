@@ -13,30 +13,36 @@ use Illuminate\Support\Facades\Password;
 /*Route::get('/', function () {
     return view('welcome');
 });*/
-Route::get('/admin', 'App\Http\Controllers\AdminController@index')->name('admin.index');
+Route::middleware('auth:web')->group(function () {
+    Route::get('/admin', 'App\Http\Controllers\AdminController@index')->name('admin.index');
 
-Route::resource('/brend', 'App\Http\Controllers\BrendController');
-Route::resource('/mechanism', 'App\Http\Controllers\MechanismController');
-Route::resource('/style', 'App\Http\Controllers\StyleController');
-Route::resource('/watch', 'App\Http\Controllers\WatchController')->middleware('auth:web');
-Route::resource('/photo', 'App\Http\Controllers\PhotoController');
-Route::resource('/promoCode', 'App\Http\Controllers\PromoCodeController')->middleware('auth:web');
-Route::resource('/order', 'App\Http\Controllers\OrderController')->middleware('auth:web');
+    Route::resource('/brend', 'App\Http\Controllers\BrendController');
+    Route::resource('/mechanism', 'App\Http\Controllers\MechanismController');
+    Route::resource('/style', 'App\Http\Controllers\StyleController');
+    Route::resource('/watch', 'App\Http\Controllers\WatchController');
+    Route::resource('/photo', 'App\Http\Controllers\PhotoController');
+    Route::resource('/promoCode', 'App\Http\Controllers\PromoCodeController');
+    Route::resource('/order', 'App\Http\Controllers\OrderController');
 
-Route::post('/promoCode/generate', 'App\Http\Controllers\PromoCodeController@generatePromoCode')->middleware('auth:web')->name('promoCode.generate');
-Route::get('/order/paymentInfo/{numberOrder}', 'App\Http\Controllers\OrderController@getPaymentInfo')->middleware('auth:web')->name('order.paymentInfo');
-Route::patch('/order/updateOrderStatus/{idOrder}/{orderStatus}', 'App\Http\Controllers\OrderController@updateOrderStatus')->middleware('auth:web')->name('order.updateStatus');
+    Route::post('/promoCode/generate', 'App\Http\Controllers\PromoCodeController@generatePromoCode')->name('promoCode.generate');
+    Route::get('/order/paymentInfo/{numberOrder}', 'App\Http\Controllers\OrderController@getPaymentInfo')->name('order.paymentInfo');
+    Route::patch('/order/updateOrderStatus/{idOrder}/{orderStatus}', 'App\Http\Controllers\OrderController@updateOrderStatus')->name('order.updateStatus');
 
-Route::get('photo/create/{id}', 'App\Http\Controllers\PhotoController@showCreatePhoto')->name('photo.showCreate');
-Route::get('photo/all/{id}', 'App\Http\Controllers\PhotoController@showAllPhoto')->name('photo.showAll');
-Route::post('photo/{idWatch}', 'App\Http\Controllers\PhotoController@addPhotoDb')->name('photo.addDb');
-Route::delete('photo/deleteAll/{id}', 'App\Http\Controllers\PhotoController@destroyAll')->name('photo.destroyAll');
+    Route::get('photo/create/{id}', 'App\Http\Controllers\PhotoController@showCreatePhoto')->name('photo.showCreate');
+    Route::get('photo/all/{id}', 'App\Http\Controllers\PhotoController@showAllPhoto')->name('photo.showAll');
+    Route::post('photo/{idWatch}', 'App\Http\Controllers\PhotoController@addPhotoDb')->name('photo.addDb');
+    Route::delete('photo/deleteAll/{id}', 'App\Http\Controllers\PhotoController@destroyAll')->name('photo.destroyAll');
 
-Route::get('/register/show', 'App\Http\Controllers\EmployeeController@show')->name('register.show');
-Route::post('/register/employee', 'App\Http\Controllers\EmployeeController@registrEmplyee')->name('register.employee');
+    Route::get('/register/show', 'App\Http\Controllers\EmployeeController@show')->name('register.show');
+    Route::post('/register/employee', 'App\Http\Controllers\EmployeeController@registrEmplyee')->name('register.employee');
+});
 
 Route::prefix('admin')->group(function () {
-    Auth::routes();
+    Auth::routes([
+        'register' => false,
+        'reset' => false,
+        'verify' => false,
+    ]);
 });
 
 Route::get('/home', [App\Http\Controllers\HomeController::class, 'index'])->name('home');

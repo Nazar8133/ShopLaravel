@@ -146,11 +146,11 @@
                     <img class="product-image" src="{{ asset($tmpWatch['photo']) }}" style="width: 80px; height: 80px; object-fit: cover; border-radius: 8px; margin-right: 12px;">
                     <div class="product-details">
                         <p><strong>{{ $tmpWatch['name'] }}</strong></p>
-                        <p>Ціна: ${{ $tmpWatch['price'] }}</p>
+                        <p>Ціна: ₴{{ $tmpWatch['price'] }}</p>
                         <p>Кількість: {{ $tmpWatch['kolvo'] }}</p>
                     </div>
                     <div class="product-price">
-                        ${{ $tmpWatch['price'] * $tmpWatch['kolvo'] }}
+                        ₴{{ $tmpWatch['price'] * $tmpWatch['kolvo'] }}
                     </div>
                 </div>
             @endforeach
@@ -165,14 +165,14 @@
             @endif
             <div class="summary-row summary-total">
                 <span>Разом:</span>
-                <span>${{ $totalCost }}</span>
+                <span>₴{{ $totalCost }}</span>
             </div>
         </div>
     </div>
 
     <div class="email-footer">
         Ви отримали цей лист, тому що використовували Магазин годинників.<br>
-        &copy; 2025 Магазин годинників. Всі права захищено.
+        &copy; 2026 Магазин годинників. Всі права захищено.
     </div>
 </div>
 </body>

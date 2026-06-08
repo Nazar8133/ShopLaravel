@@ -26,8 +26,8 @@ class WatchRequest extends FormRequest
             'discription'=>'required|min:50|max:2500',
             'price'=>'required|numeric|min_digits:3|max_digits:7',
             'search'=>'numeric|min:1|max:999',
-            'photo'   => 'array', // Поле має бути масивом
-            'photo.*' => 'image|max:5120'  // Валідація для кожного файлу окремо
+            'photo'   => 'array',
+            'photo.*' => 'image|max:5120'
         ];
     }
 
